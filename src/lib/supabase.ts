@@ -28,6 +28,8 @@ export async function createContactRequest(request: {
   });
 
   if (!response.ok) {
+    const errorDetails = await response.text();
+    console.error("Supabase contact request failed:", response.status, errorDetails);
     throw new Error("Unable to send your message.");
   }
 }

@@ -9,6 +9,8 @@ create table if not exists public.sam_contact_requests (
 
 alter table public.sam_contact_requests enable row level security;
 
+grant insert on table public.sam_contact_requests to anon, authenticated;
+
 drop policy if exists "Anyone can submit contact requests" on public.sam_contact_requests;
 create policy "Anyone can submit contact requests"
 on public.sam_contact_requests
