@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+import { Instagram, MessageCircle } from "lucide-react";
+import { createContactRequest } from "@/lib/supabase";
 import heroPortrait from "@/assets/photos/red-lehenga.jpeg";
 import redSaree from "@/assets/photos/red-saree.jpeg";
 import blue1 from "@/assets/photos/blue-jumpsuit-1.jpeg";
@@ -45,14 +47,14 @@ function Nav() {
     <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/70 border-b border-border/60">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="#home" className="font-serif text-2xl tracking-wide">
-          Sameeksha<span className="text-primary">.</span>
+          SameekshaKP Gowda<span className="text-primary">.</span>
         </a>
         <nav className="hidden lg:flex gap-7 text-sm">
           {NAV.map((n) => (
             <a key={n.id} href={`#${n.id}`} className="hover:text-primary transition-colors">{n.label}</a>
           ))}
         </nav>
-        <a href="#contact" className="hidden lg:inline-flex items-center px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm hover:opacity-90">Book Sameeksha</a>
+        <a href="#contact" className="hidden lg:inline-flex items-center px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm hover:opacity-90">Take an appointment</a>
         <button className="lg:hidden text-2xl" onClick={() => setOpen(!open)} aria-label="menu">≡</button>
       </div>
       {open && (
@@ -324,6 +326,33 @@ function Press() {
 }
 
 function Contact() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setStatus(null);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      await createContactRequest({
+        name: String(formData.get("name") ?? ""),
+        email: String(formData.get("email") ?? ""),
+        phone: String(formData.get("phone") ?? ""),
+        message: `Inquiry type: ${String(formData.get("inquiryType") ?? "")}\n\n${String(formData.get("message") ?? "")}`,
+      });
+      form.reset();
+      setStatus({ type: "success", message: "Thank you. Sameeksha's team will reach out shortly." });
+    } catch {
+      setStatus({ type: "error", message: "We could not send your message. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <Section id="contact" kicker="Contact" title="Let's collaborate">
       <div className="grid lg:grid-cols-2 gap-12">
@@ -333,26 +362,46 @@ function Contact() {
             <p><span className="text-muted-foreground">Email · </span>sameekshakp5@gmail.com</p>
             <p><span className="text-muted-foreground">Phone · </span>+91 93531 01818</p>
           </div>
-          <div className="flex gap-3 pt-2">
-            {["Instagram", "YouTube", "Facebook"].map((s) => (
-              <a key={s} href="#" className="px-4 py-2 rounded-full border border-border hover:border-primary hover:text-primary transition text-sm">{s}</a>
-            ))}
+          <div className="flex flex-wrap gap-3 pt-2">
+            <a
+              href="https://www.instagram.com/samsync_?stkn=MXBnOXRpcGl1d2xrdg=="
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Follow Sameeksha on Instagram"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border hover:border-primary hover:text-primary transition text-sm"
+            >
+              <Instagram className="size-4" aria-hidden="true" />
+              Instagram
+            </a>
+            <a
+              href="https://wa.me/919353101818"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Message Sameeksha on WhatsApp"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border hover:border-primary hover:text-primary transition text-sm"
+            >
+              <MessageCircle className="size-4" aria-hidden="true" />
+              WhatsApp
+            </a>
           </div>
         </div>
-        <form className="space-y-4 p-8 rounded-2xl bg-card border border-border" onSubmit={(e) => { e.preventDefault(); alert("Thank you! Sameeksha's team will reach out shortly."); }}>
+        <form className="space-y-4 p-8 rounded-2xl bg-card border border-border" onSubmit={handleSubmit}>
           <div className="grid md:grid-cols-2 gap-4">
-            <input required placeholder="Your name" className="px-4 py-3 rounded-lg border border-border bg-background" />
-            <input required type="email" placeholder="Email" className="px-4 py-3 rounded-lg border border-border bg-background" />
+            <input required name="name" placeholder="Your name" className="px-4 py-3 rounded-lg border border-border bg-background" />
+            <input required name="email" type="email" placeholder="Email" className="px-4 py-3 rounded-lg border border-border bg-background" />
           </div>
-          <input placeholder="Phone" className="w-full px-4 py-3 rounded-lg border border-border bg-background" />
-          <select className="w-full px-4 py-3 rounded-lg border border-border bg-background">
+          <input name="phone" placeholder="Phone" className="w-full px-4 py-3 rounded-lg border border-border bg-background" />
+          <select name="inquiryType" className="w-full px-4 py-3 rounded-lg border border-border bg-background">
             <option>Event booking</option>
             <option>Acting opportunity</option>
             <option>Dance performance</option>
             <option>Collaboration</option>
           </select>
-          <textarea required placeholder="Message" rows={5} className="w-full px-4 py-3 rounded-lg border border-border bg-background" />
-          <button className="w-full py-3 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition">Send message</button>
+          <textarea required name="message" placeholder="Message" rows={5} className="w-full px-4 py-3 rounded-lg border border-border bg-background" />
+          {status && <p role="status" className={status.type === "success" ? "text-sm text-green-700" : "text-sm text-destructive"}>{status.message}</p>}
+          <button disabled={isSubmitting} className="w-full py-3 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition disabled:opacity-60">
+            {isSubmitting ? "Sending..." : "Send message"}
+          </button>
         </form>
       </div>
     </Section>
