@@ -359,8 +359,8 @@ function Contact() {
         <div className="space-y-6">
           <p className="text-lg text-muted-foreground">For event bookings, acting opportunities, dance performances and collaborations.</p>
           <div className="space-y-3 text-lg">
-            <p><span className="text-muted-foreground">Email · </span>sameekshakp5@gmail.com</p>
-            <p><span className="text-muted-foreground">Phone · </span>+91 93531 01818</p>
+            <p><span className="text-muted-foreground">Email · </span>sameekshakpgowda111@gmail.com</p>
+            <p><span className="text-muted-foreground">Phone · </span>+91 94481 67715</p>
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
             <a
